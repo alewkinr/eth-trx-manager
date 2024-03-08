@@ -1,0 +1,206 @@
+openapi: 3.0.0
+info:
+  description: "Ethereum transactions manager"
+  version: 1.0.0
+  title: Ethereum transactions manager
+  termsOfService: https://github.com/alewkinr/eth-trx-manager
+  contact:
+    email: alewkinr@gmail.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: http://localhost:8080
+  - url: https://petstore.swagger.io/v2
+
+tags:
+  - name: transactions
+    description: Everything about transactions
+  - name: balances
+    description: Everything about balances
+
+paths:
+  /transactions:
+    post:
+      tags:
+        - transactions
+      summary: CreateTransaction
+      description: Add a new transaction to ethereum network
+      operationId: addTrx
+      requestBody:
+        $ref: "#/components/requestBodies/CreateTrxRequest"
+      responses:
+        "4XX":
+          description: Bad request
+          content:
+              application/json:
+                schema:
+                  $ref: "#/components/responses/ErrBadRequest"
+        "5XX":
+          description: Internal error
+          content:
+              application/json:
+                schema:
+                  $ref: "#/components/responses/ErrInternalError"
+        "200":
+          description: Transaction created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trx"
+  
+  /transactions/{hash}:
+    get:
+      tags:
+        - transactions
+      summary: GetTransaction
+      description: Get detail information about transaction
+      operationId: getByTrxId
+      parameters:
+        - name: hash
+          in: path
+          description: Certain transaction hash
+          required: true
+          schema:
+            type: string
+      responses:
+        "4XX":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/ErrBadRequest"
+        "5XX":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/ErrInternalError"
+        
+        "200":
+          description: Transaction data was received successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trx"
+  
+  
+  /balances/{address}:
+    get:
+      tags:
+        - balances
+      summary: GetBalance
+      description: Get Ethereum address balance
+      operationId: getEthBalanceById
+      parameters:
+        - name: address
+          in: path
+          description: Ethereum address
+          required: true
+          schema:
+            type: string
+      
+      responses:
+        "4XX":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/ErrBadRequest"
+        "5XX":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/ErrInternalError"
+        "200":
+          description: Balance was received successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Balance"
+
+
+components:
+  schemas:
+    Trx:
+      type: object
+      properties:
+        hash:
+          description: Transaction hash
+          type: string
+          required: true
+        from:
+          description: Sender address
+          type: string
+          required: true
+        to:
+          description: Receiver address
+          type: string
+          required: true
+        value:
+          description: Amount of ETH to send
+          type: object
+          required: true
+          properties:
+              amount:
+                description: Whole part of ETH
+                type: integer
+                required: true
+                default: 0
+              fraction:
+                description: Fractional part of ETH
+                type: integer
+                required: true
+                default: 0
+        timestamp:
+          description: Transaction timestamp in RFC3339 format
+          type: string
+          format: date-time
+          required: true
+          example: "2021-01-01T00:00:00Z"
+    
+    Balance:
+      description: Ethereum address balance
+      type: object
+
+  
+  requestBodies:
+    CreateTrxRequest:
+      description: Request to create a new transaction
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Trx"
+            
+  
+  responses:
+    ErrBadRequest:
+      description: Bad request error response
+      content:
+        application/json:
+          schema:
+            type: object
+            required: true
+            properties:
+              message:
+                type: string
+                required: true
+                minLength: 3
+    
+    ErrInternalError:
+      description: Internal error response
+      content:
+        application/json:
+          schema:
+            type: object
+            required: true
+            properties:
+              message:
+                type: string
+                required: true
+                default: "internal error"

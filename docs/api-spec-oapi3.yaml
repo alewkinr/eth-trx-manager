@@ -28,27 +28,34 @@ paths:
       summary: CreateTransaction
       description: Add a new transaction to ethereum network
       operationId: addTrx
+      
       requestBody:
-        $ref: "#/components/requestBodies/CreateTrxRequest"
+        description: CreateTransactionRequest
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Transaction"
+      
       responses:
         "4XX":
-          description: Bad request
+          description: "Bad request"
           content:
-              application/json:
-                schema:
-                  $ref: "#/components/responses/ErrBadRequest"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrBadRequest"
         "5XX":
-          description: Internal error
+          description: "Internal error"
           content:
-              application/json:
-                schema:
-                  $ref: "#/components/responses/ErrInternalError"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrInternalError"
         "200":
           description: Transaction created successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Trx"
+                $ref: "#/components/schemas/Transaction"
   
   /transactions/{hash}:
     get:
@@ -66,24 +73,24 @@ paths:
             type: string
       responses:
         "4XX":
-          description: Bad request
+          description: "Bad request"
           content:
             application/json:
               schema:
-                $ref: "#/components/responses/ErrBadRequest"
+                $ref: "#/components/schemas/ErrBadRequest"
         "5XX":
-          description: Internal error
+          description: "Internal error"
           content:
             application/json:
               schema:
-                $ref: "#/components/responses/ErrInternalError"
+                $ref: "#/components/schemas/ErrInternalError"
         
         "200":
           description: Transaction data was received successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Trx"
+                $ref: "#/components/schemas/Transaction"
   
   
   /balances/{address}:
@@ -103,17 +110,17 @@ paths:
       
       responses:
         "4XX":
-          description: Bad request
+          description: "Bad request"
           content:
             application/json:
               schema:
-                $ref: "#/components/responses/ErrBadRequest"
+                $ref: "#/components/schemas/ErrBadRequest"
         "5XX":
-          description: Internal error
+          description: "Internal error"
           content:
             application/json:
               schema:
-                $ref: "#/components/responses/ErrInternalError"
+                $ref: "#/components/schemas/ErrInternalError"
         "200":
           description: Balance was received successfully
           content:
@@ -126,81 +133,67 @@ paths:
 
 components:
   schemas:
-    Trx:
+    Transaction:
+      description: Transaction model
       type: object
+      required:
+        - hash
+        - from
+        - to
+        - value
+        - timestamp
       properties:
         hash:
           description: Transaction hash
           type: string
-          required: true
         from:
           description: Sender address
           type: string
-          required: true
         to:
           description: Receiver address
           type: string
-          required: true
         value:
           description: Amount of ETH to send
           type: object
-          required: true
+          required:
+            - amount
+            - fraction
           properties:
-              amount:
-                description: Whole part of ETH
-                type: integer
-                required: true
-                default: 0
-              fraction:
-                description: Fractional part of ETH
-                type: integer
-                required: true
-                default: 0
+            amount:
+              description: Whole part of ETH
+              type: integer
+              default: 0
+            fraction:
+              description: Fractional part of ETH
+              type: integer
+              default: 0
         timestamp:
           description: Transaction timestamp in RFC3339 format
           type: string
           format: date-time
-          required: true
           example: "2021-01-01T00:00:00Z"
     
     Balance:
       description: Ethereum address balance
       type: object
-
   
-  requestBodies:
-    CreateTrxRequest:
-      description: Request to create a new transaction
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/Trx"
-            
   
-  responses:
     ErrBadRequest:
       description: Bad request error response
-      content:
-        application/json:
-          schema:
-            type: object
-            required: true
-            properties:
-              message:
-                type: string
-                required: true
-                minLength: 3
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          minLength: 3
     
     ErrInternalError:
       description: Internal error response
-      content:
-        application/json:
-          schema:
-            type: object
-            required: true
-            properties:
-              message:
-                type: string
-                required: true
-                default: "internal error"
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          default: "internal error"

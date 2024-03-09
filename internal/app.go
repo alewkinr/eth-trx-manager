@@ -27,7 +27,7 @@ func NewApplication(
 	app := &Application{}
 	app.cfg = config.MustNewConfig()
 
-	app.balanceAPI = http.NewBalancesAPIController(http.NewBalancesAPIService())
+	app.balanceAPI = http.NewWalletsAPIController(http.NewWalletsAPIService())
 
 	app.srv = &stdhttp.Server{
 		Addr:    fmt.Sprintf("%s:%s", app.cfg.Host, app.cfg.Port),

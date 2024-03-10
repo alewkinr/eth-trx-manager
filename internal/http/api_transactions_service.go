@@ -44,22 +44,10 @@ func (s *TransactionsAPIService) AddTrx(ctx context.Context, request CreateTrans
 
 	updatedTrx, createTrxErr := s.trxm.CreateTransaction(ctx, trx)
 	if createTrxErr != nil {
-		return Response(http.StatusInternalServerError, nil), createTrxErr
+		return Response(http.StatusInternalServerError, &ErrInternalError{InternalErrorMessage}), createTrxErr
 	}
 
-	// TODO - update AddTrx with the required logic for this service method.
-	// Add api_transactions_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response Response(200, Transaction{}) or use other options such as http.Ok ...
-	// return Response(200, Transaction{}), nil
-
-	// TODO: Uncomment the next line to return response Response(4XX, ErrBadRequest{}) or use other options such as http.Ok ...
-	// return Response(4XX, ErrBadRequest{}), nil
-
-	// TODO: Uncomment the next line to return response Response(5XX, ErrInternalError{}) or use other options such as http.Ok ...
-	// return Response(5XX, ErrInternalError{}), nil
-
-	return Response(http.StatusOK, Transaction{
+	return Response(http.StatusOK, &Transaction{
 		Hash:      updatedTrx.Hash().String(),
 		From:      updatedTrx.From().String(),
 		To:        updatedTrx.To().String(),
@@ -76,25 +64,14 @@ func (s *TransactionsAPIService) GetByTrxId(ctx context.Context, hash string) (I
 
 	updatedTrx, getTrxErr := s.trxm.GetTransaction(ctx, trx)
 	if getTrxErr != nil {
-		return Response(http.StatusInternalServerError, ErrInternalError{Message: "internal error"}), getTrxErr
+		return Response(http.StatusInternalServerError, &ErrInternalError{InternalErrorMessage}), getTrxErr
 	}
 
 	if updatedTrx == nil {
 		return Response(http.StatusNoContent, nil), nil
 	}
-	// TODO - update GetByTrxId with the required logic for this service method.
-	// Add api_transactions_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
-	// TODO: Uncomment the next line to return response Response(200, Transaction{}) or use other options such as http.Ok ...
-	// return Response(200, Transaction{}), nil
-
-	// TODO: Uncomment the next line to return response Response(4XX, ErrBadRequest{}) or use other options such as http.Ok ...
-	// return Response(4XX, ErrBadRequest{}), nil
-
-	// TODO: Uncomment the next line to return response Response(5XX, ErrInternalError{}) or use other options such as http.Ok ...
-	// return Response(5XX, ErrInternalError{}), nil
-
-	return Response(http.StatusOK, Transaction{
+	return Response(http.StatusOK, &Transaction{
 		Hash:      updatedTrx.Hash().String(),
 		From:      updatedTrx.From().String(),
 		To:        updatedTrx.To().String(),

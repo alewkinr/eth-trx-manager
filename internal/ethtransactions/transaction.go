@@ -19,7 +19,7 @@ type Transaction struct {
 	from  string
 	value *big.Int
 
-	status    Status // TODO: add status to oapi spec
+	status    Status
 	timestamp time.Time
 }
 

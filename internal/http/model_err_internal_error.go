@@ -10,6 +10,8 @@
 
 package http
 
+const InternalErrorMessage = "internal error"
+
 // ErrInternalError - Internal error response
 type ErrInternalError struct {
 	Message string `json:"message"`

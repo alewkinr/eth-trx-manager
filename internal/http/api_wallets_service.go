@@ -44,10 +44,9 @@ func (s *WalletsAPIService) GetEthBalanceById(ctx context.Context, address strin
 		}), nil
 
 	case errors.Is(refreshBalanceErr, ethwallet.ErrInvalidAddress):
-		return Response(http.StatusBadRequest, ErrBadRequest{Message: refreshBalanceErr.Error()}), refreshBalanceErr
+		return Response(http.StatusBadRequest, &ErrBadRequest{refreshBalanceErr.Error()}), nil
 
 	default:
-		return Response(http.StatusInternalServerError, ErrInternalError{Message: refreshBalanceErr.Error()}), refreshBalanceErr
+		return Response(http.StatusInternalServerError, &ErrInternalError{InternalErrorMessage}), refreshBalanceErr
 	}
-	// TODO: Add api_wallets_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 }

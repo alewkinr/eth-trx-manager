@@ -35,7 +35,7 @@ paths:
     content:
      application/json:
       schema:
-       $ref: "#/components/requestBodies/CreateTransactionRequest"
+       $ref: "#/components/schemas/CreateTransactionRequest"
    
    responses:
     "4XX":
@@ -217,23 +217,19 @@ components:
      minLength: 3
      example: "internal error"
  
- requestBodies:
-   CreateTransactionRequest:
-     description: New transaction request
-     required: true
-     content:
-       application/json:
-         schema:
-           required:
-             - to
-             - value
-           properties:
-             to:
-               type: string
-               example: "0x7fa06F065C9f0d85AAaa9b0A5927f30533cecEE0"
-             value:
-               description: The value to transfer in Wei (1000 Wei = 0,000000000000001 Ether)
-               type: integer
-               format: int64
-               example: 1000
+  CreateTransactionRequest:
+    description: New transaction request
+    type: object
+    required:
+      - to
+      - value
+    properties:
+      to:
+        type: string
+        example: "0x7fa06F065C9f0d85AAaa9b0A5927f30533cecEE0"
+      value:
+        description: The value to transfer in Wei (1000 Wei = 0,000000000000001 Ether)
+        type: integer
+        format: int64
+        example: 1000
    

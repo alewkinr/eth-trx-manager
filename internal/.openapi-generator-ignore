@@ -29,8 +29,8 @@ docs/
 
 # implemented files
 # wallets api logic
-api_wallets_service.go
+http/api_wallets_service.go
 
 # transactions api logic
-api_transactions.go
-api_transactions_service.go
+http/api_transactions.go
+http/api_transactions_service.go

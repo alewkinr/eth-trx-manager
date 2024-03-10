@@ -75,7 +75,7 @@ func (s *TransactionsAPIService) GetByTrxId(ctx context.Context, hash string) (I
 		Hash:      updatedTrx.Hash().String(),
 		From:      updatedTrx.From().String(),
 		To:        updatedTrx.To().String(),
-		Value:     ethereum.ToDecimal(updatedTrx.Value(), 18).String(),
+		Value:     ethereum.ToDecimal(updatedTrx.Value(), 18).Text('f', 18),
 		Status:    updatedTrx.Status().String(),
 		Timestamp: updatedTrx.Timestamp(),
 	}), nil

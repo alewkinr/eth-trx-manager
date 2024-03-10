@@ -234,5 +234,6 @@ components:
              value:
                description: The value to transfer in Wei (1000 Wei = 0,000000000000001 Ether)
                type: integer
+               format: int64
                example: 1000
    

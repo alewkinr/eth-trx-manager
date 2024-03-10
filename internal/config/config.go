@@ -24,6 +24,8 @@ type Config struct {
 	*Ethereum `koanf:"ethereum"`
 
 	*Log `koanf:"log"`
+
+	*Cache `koanf:"cache"`
 }
 
 // MustNewConfig — constructor for configuration struct, or panic if error

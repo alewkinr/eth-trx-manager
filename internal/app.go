@@ -13,6 +13,7 @@ import (
 	"github.com/alewkinr/eth-trx-manager/internal/ethwallet"
 	"github.com/alewkinr/eth-trx-manager/internal/http"
 	"github.com/alewkinr/eth-trx-manager/internal/repositories"
+	"github.com/alewkinr/eth-trx-manager/pkg/cache/inmemory"
 	"github.com/alewkinr/eth-trx-manager/pkg/ethereum"
 	"github.com/alewkinr/eth-trx-manager/pkg/logger"
 )
@@ -35,6 +36,8 @@ func NewApplication() (*Application, error) {
 	app.cfg = config.MustNewConfig()
 	app.log = logger.New(app.cfg.Log.Level)
 
+	cache := inmemory.NewStore(app.cfg.Size, app.cfg.TTL, app.log)
+
 	ethClient, closeFunc, connEthClientErr := ethereum.NewClient(app.cfg.Ethereum.URL)
 	if connEthClientErr != nil {
 		app.log.Error("ethereum client connection", "error", connEthClientErr)
@@ -42,7 +45,7 @@ func NewApplication() (*Application, error) {
 	}
 	app.ethCloseFunc = closeFunc
 
-	walletMngr := ethwallet.NewManager(repositories.NewWalletRepository(ethClient), app.log)
+	walletMngr := ethwallet.NewManager(repositories.NewWalletRepository(ethClient, cache), app.log)
 	app.walletAPI = http.NewWalletsAPIController(http.NewWalletsAPIService(walletMngr))
 
 	trxRepository, createTrxRepoErr := repositories.NewTransactionsRepository(ethClient, app.cfg.Ethereum.PrivateKey)

@@ -40,7 +40,10 @@ func NewApplication(lgr *slog.Logger) *Application {
 	walletMngr := ethwallet.NewManager(ethClient, lgr)
 	app.walletAPI = http.NewWalletsAPIController(http.NewWalletsAPIService(walletMngr))
 
-	trxMngr := ethtransactions.NewManager(ethClient, lgr)
+	trxMngr, err := ethtransactions.NewManager(ethClient, lgr, app.cfg.Ethereum.PrivateKey)
+	if err != nil {
+		return nil
+	}
 	app.transactionsAPI = http.NewTransactionsAPIController(http.NewTransactionsAPIService(trxMngr))
 
 	app.srv = &stdhttp.Server{

@@ -18,6 +18,9 @@ func run() int {
 	slog := logger.New("debug") // todo: debug off
 
 	app := internal.NewApplication(slog)
+	if app == nil {
+		return exitCodeNotOK
+	}
 
 	go graceful.ShutdownMonitor(app.Stop)
 

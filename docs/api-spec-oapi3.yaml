@@ -1,209 +1,238 @@
 openapi: 3.0.0
 info:
-  description: "Ethereum transactions manager"
-  version: 1.0.0
-  title: Ethereum transactions manager
-  termsOfService: https://github.com/alewkinr/eth-trx-manager
-  contact:
-    email: alewkinr@gmail.com
-  license:
-    name: Apache 2.0
-    url: https://www.apache.org/licenses/LICENSE-2.0.html
+ description: "Ethereum transactions manager"
+ version: 1.0.0
+ title: Ethereum transactions manager
+ termsOfService: https://github.com/alewkinr/eth-trx-manager
+ contact:
+  email: alewkinr@gmail.com
+ license:
+  name: Apache 2.0
+  url: https://www.apache.org/licenses/LICENSE-2.0.html
 
 servers:
-  - url: http://localhost:8080
-  - url: https://petstore.swagger.io/v2
+ - url: http://localhost:8080
+ - url: https://petstore.swagger.io/v2
 
 tags:
-  - name: transactions
-    description: Everything about transactions
-  - name: wallets
-    description: Everything about wallets
+ - name: transactions
+   description: Everything about transactions
+ - name: wallets
+   description: Everything about wallets
 
 paths:
-  /transactions:
-    post:
-      tags:
-        - transactions
-      summary: CreateTransaction
-      description: Add a new transaction to ethereum network
-      operationId: addTrx
-      
-      requestBody:
-        description: CreateTransactionRequest
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Transaction"
-      
-      responses:
-        "4XX":
-          description: "Bad request"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrBadRequest"
-        "5XX":
-          description: "Internal error"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrInternalError"
-        "200":
-          description: Transaction created successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Transaction"
-  
-  /transactions/{hash}:
-    get:
-      tags:
-        - transactions
-      summary: GetTransaction
-      description: Get detail information about transaction
-      operationId: getByTrxId
-      parameters:
-        - name: hash
-          in: path
-          description: Certain transaction hash
-          required: true
-          schema:
-            type: string
-      responses:
-        "4XX":
-          description: "Bad request"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrBadRequest"
-        "5XX":
-          description: "Internal error"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrInternalError"
-        
-        "200":
-          description: Transaction data was received successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Transaction"
-  
-  
-  /wallets/{address}:
-    get:
-      tags:
-        - wallets
-      summary: GetWalletBalance
-      description: Get Ethereum address balance
-      operationId: getEthBalanceById
-      parameters:
-        - name: address
-          in: path
-          description: Ethereum wallet address
-          required: true
-          schema:
-            type: string
-      
-      responses:
-        "4XX":
-          description: "Bad request"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrBadRequest"
-        "5XX":
-          description: "Internal error"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrInternalError"
-        "200":
-          description: Wallet information was received successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Wallet"
+ /transactions:
+  post:
+   tags:
+    - transactions
+   summary: CreateTransaction
+   description: Add a new transaction to Ethereum network
+   operationId: addTrx
+   
+   requestBody:
+    description: CreateTransactionRequest
+    required: true
+    content:
+     application/json:
+      schema:
+       $ref: "#/components/requestBodies/CreateTransactionRequest"
+   
+   responses:
+    "4XX":
+     description: "Bad request"
+     content:
+      application/json:
+       schema:
+        $ref: "#/components/schemas/ErrBadRequest"
+    "5XX":
+     description: "Internal error"
+     content:
+      application/json:
+       schema:
+        $ref: "#/components/schemas/ErrInternalError"
+    "200":
+     description: Transaction created successfully
+     content:
+      application/json:
+       schema:
+        $ref: "#/components/schemas/Transaction"
+ 
+ /transactions/{hash}:
+  get:
+   tags:
+    - transactions
+   summary: GetTransaction
+   description: Get detail information about transaction
+   operationId: getByTrxId
+   parameters:
+    - name: hash
+      in: path
+      description: Certain transaction hash
+      required: true
+      schema:
+       type: string
+       example: "0x73766bc5b3c25d8a11585873f0702af54c03e70ebf062ec517aed9b22675fd67"
+   responses:
+    "4XX":
+     description: "Bad request"
+     content:
+      application/json:
+       schema:
+        $ref: "#/components/schemas/ErrBadRequest"
+    "5XX":
+     description: "Internal error"
+     content:
+      application/json:
+       schema:
+        $ref: "#/components/schemas/ErrInternalError"
+    
+    "200":
+     description: Transaction data was received successfully
+     content:
+      application/json:
+       schema:
+        $ref: "#/components/schemas/Transaction"
+ 
+ 
+ /wallets/{address}:
+  get:
+   tags:
+    - wallets
+   summary: GetWalletBalance
+   description: Get Ethereum address balance
+   operationId: getEthBalanceById
+   parameters:
+    - name: address
+      in: path
+      description: Ethereum wallet address
+      required: true
+      schema:
+       type: string
+       example: "0x17D6BB107865E3837D3A0Ec8be5681176f158471"
+   
+   responses:
+    "4XX":
+     description: "Bad request"
+     content:
+      application/json:
+       schema:
+        $ref: "#/components/schemas/ErrBadRequest"
+    "5XX":
+     description: "Internal error"
+     content:
+      application/json:
+       schema:
+        $ref: "#/components/schemas/ErrInternalError"
+    "200":
+     description: Wallet information was received successfully
+     content:
+      application/json:
+       schema:
+        type: array
+        items:
+         $ref: "#/components/schemas/Wallet"
 
 
 components:
-  schemas:
-    Transaction:
-      description: Transaction model
-      type: object
-      required:
-        - hash
-        - from
-        - to
-        - value
-        - timestamp
-      properties:
-        hash:
-          description: Transaction hash
-          type: string
-        from:
-          description: Sender address
-          type: string
-        to:
-          description: Receiver address
-          type: string
-        value:
-          description: Amount of ETH to send
-          type: object
-          required:
-            - amount
-            - fraction
-          properties:
-            amount:
-              description: Whole part of ETH
-              type: integer
-              default: 0
-            fraction:
-              description: Fractional part of ETH
-              type: integer
-              default: 0
-        timestamp:
-          description: Transaction timestamp in RFC3339 format
-          type: string
-          format: date-time
-          example: "2021-01-01T00:00:00Z"
-    
-    Wallet:
-      description: Ethereum wallet information
-      type: object
-      required:
-        - address
-        - balance
-      properties:
-        address:
-          description: Ethereum address of the wallet
-          type: string
-        balance:
-          description: Ethereum wallet balance
-          type: string
+ schemas:
+  Transaction:
+   description: Transaction model
+   type: object
+   required:
+    - hash
+    - from
+    - to
+    - value
+    - timestamp
+    - status
+   properties:
+    hash:
+     description: Transaction hash
+     type: string
+     example: "0x73766bc5b3c25d8a11585873f0702af54c03e70ebf062ec517aed9b22675fd67"
+    from:
+     description: Sender address
+     type: string
+     example: "0x17D6BB107865E3837D3A0Ec8be5681176f158471"
+    to:
+     description: Receiver address
+     type: string
+     example: "0x17D6BB107865E3837D3A0Ec8be5681176f158471"
+    value:
+     description: The value being transacted in Ether
+     type: string
+     example: 0,000000000000001
+    timestamp:
+     description: Transaction timestamp in RFC3339 format
+     type: string
+     format: date-time
+     example: "2021-01-01T00:00:00Z"
+    status:
+      description: >
+        Status of the transactions
+        `IS_PENDING` — transaction is still processing
+        `DONE` — transaction was completed
+      type: string
+      enum:
+        - IS_PENDING
+        - DONE
+      example: IS_PENDING
   
   
-    ErrBadRequest:
-      description: Bad request error response
-      type: object
-      required:
-        - message
-      properties:
-        message:
-          type: string
-          minLength: 3
-    
-    ErrInternalError:
-      description: Internal error response
-      type: object
-      required:
-        - message
-      properties:
-        message:
-          type: string
-          default: "internal error"
+  Wallet:
+   description: Ethereum wallet information
+   type: object
+   required:
+    - address
+    - balance
+   properties:
+    address:
+     description: Ethereum address of the wallet
+     type: string
+     example: "0x17D6BB107865E3837D3A0Ec8be5681176f158471"
+    balance:
+     description: The balance of the wallet in Ether
+     type: string
+     example: 0,000000000000001
+  
+  ErrBadRequest:
+   description: Bad request error response
+   type: object
+   required:
+    - message
+   properties:
+    message:
+     type: string
+     minLength: 3
+     example: "bad request"
+  
+  ErrInternalError:
+   description: Internal error response
+   type: object
+   required:
+    - message
+   properties:
+    message:
+     type: string
+     minLength: 3
+     example: "internal error"
+ 
+ requestBodies:
+   CreateTransactionRequest:
+     description: New transaction request
+     required: true
+     content:
+       application/json:
+         schema:
+           required:
+             - to
+             - value
+           properties:
+             to:
+               type: string
+               example: "0x7fa06F065C9f0d85AAaa9b0A5927f30533cecEE0"
+             value:
+               description: The value to transfer in Wei (1000 Wei = 0,000000000000001 Ether)
+               type: integer
+               example: 1000
+   

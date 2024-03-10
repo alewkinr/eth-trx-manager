@@ -7,6 +7,11 @@ import (
 	"github.com/knadh/koanf/v2"
 )
 
+// delimiter — config variables delimiter
+// env variables must be named {embeddedStructPrefix}{delimiter}{variableName}
+// i.e. ETHEREUM.PRIVATE_KEY
+const delimiter = "."
+
 type Config struct {
 	k *koanf.Koanf `koanf:"-"`
 
@@ -27,10 +32,11 @@ const (
 // MustNewConfig — constructor for configuration struct, or panic if error
 func MustNewConfig() *Config {
 	cfg := &Config{
-		k: koanf.New("."),
+		k: koanf.New(delimiter),
 	}
 
-	if err := cfg.k.Load(env.Provider("", "_", nil), nil); err != nil {
+	if err := cfg.k.Load(env.Provider("", delimiter, nil), nil); err != nil {
+		// todo: substitute panic
 		panic(fmt.Errorf("providing env vars: %w", err))
 	}
 

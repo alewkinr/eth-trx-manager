@@ -12,7 +12,6 @@ package http
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
 	"github.com/alewkinr/eth-trx-manager/internal/ethtransactions"
@@ -34,6 +33,13 @@ func NewTransactionsAPIService(trxm *ethtransactions.Manager) TransactionsAPISer
 
 // AddTrx - CreateTransaction
 func (s *TransactionsAPIService) AddTrx(ctx context.Context, transaction Transaction) (ImplResponse, error) {
+	trx := &ethtransactions.Transaction{}
+
+	updatedTrx, createTrxErr := s.trxm.CreateTransaction(ctx, trx)
+	if createTrxErr != nil {
+		return Response(http.StatusInternalServerError, nil), createTrxErr
+	}
+
 	// TODO - update AddTrx with the required logic for this service method.
 	// Add api_transactions_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
@@ -46,7 +52,16 @@ func (s *TransactionsAPIService) AddTrx(ctx context.Context, transaction Transac
 	// TODO: Uncomment the next line to return response Response(5XX, ErrInternalError{}) or use other options such as http.Ok ...
 	// return Response(5XX, ErrInternalError{}), nil
 
-	return Response(http.StatusNotImplemented, nil), errors.New("AddTrx method not implemented")
+	return Response(http.StatusOK, Transaction{
+		Hash: updatedTrx.Hash().String(),
+		From: updatedTrx.From().String(),
+		To:   updatedTrx.To().String(),
+		Value: TransactionValue{
+			Amount:   updatedTrx.Value().Int64(),
+			Fraction: updatedTrx.Value().Int64(),
+		},
+		Timestamp: updatedTrx.Timestamp(),
+	}), nil
 }
 
 // GetByTrxId - GetTransaction

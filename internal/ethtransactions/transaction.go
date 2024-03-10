@@ -11,7 +11,7 @@ import (
 )
 
 // Status — status of the transaction
-// ENUM(IsPending, Done).
+// ENUM(is_pending, done).
 type Status uint
 
 // Transaction — Ethereum transaction entity

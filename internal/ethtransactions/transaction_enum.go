@@ -9,13 +9,14 @@ package ethtransactions
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 const (
-	// StatusIsPending is a Status of type IsPending.
+	// StatusIsPending is a Status of type Is_pending.
 	StatusIsPending Status = iota
 	// StatusDone is a Status of type Done.
 	StatusDone
@@ -23,11 +24,11 @@ const (
 
 var ErrInvalidStatus = errors.New("not a valid Status")
 
-const _StatusName = "ISPENDINGDONE"
+const _StatusName = "IS_PENDINGDONE"
 
 var _StatusMap = map[Status]string{
-	StatusIsPending: _StatusName[0:9],
-	StatusDone:      _StatusName[9:13],
+	StatusIsPending: _StatusName[0:10],
+	StatusDone:      _StatusName[10:14],
 }
 
 // String implements the Stringer interface.
@@ -46,10 +47,10 @@ func (x Status) IsValid() bool {
 }
 
 var _StatusValue = map[string]Status{
-	_StatusName[0:9]:                   StatusIsPending,
-	strings.ToLower(_StatusName[0:9]):  StatusIsPending,
-	_StatusName[9:13]:                  StatusDone,
-	strings.ToLower(_StatusName[9:13]): StatusDone,
+	_StatusName[0:10]:                   StatusIsPending,
+	strings.ToLower(_StatusName[0:10]):  StatusIsPending,
+	_StatusName[10:14]:                  StatusDone,
+	strings.ToLower(_StatusName[10:14]): StatusDone,
 }
 
 // ParseStatus attempts to convert a string to a Status.

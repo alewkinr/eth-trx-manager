@@ -12,6 +12,7 @@ import (
 	"github.com/alewkinr/eth-trx-manager/internal/ethtransactions"
 	"github.com/alewkinr/eth-trx-manager/internal/ethwallet"
 	"github.com/alewkinr/eth-trx-manager/internal/http"
+	"github.com/alewkinr/eth-trx-manager/internal/repositories"
 	"github.com/alewkinr/eth-trx-manager/pkg/ethereum"
 	"github.com/alewkinr/eth-trx-manager/pkg/logger"
 )
@@ -41,10 +42,16 @@ func NewApplication() (*Application, error) {
 	}
 	app.ethCloseFunc = closeFunc
 
-	walletMngr := ethwallet.NewManager(ethereum.NewWalletRepository(ethClient), app.log)
+	walletMngr := ethwallet.NewManager(repositories.NewWalletRepository(ethClient), app.log)
 	app.walletAPI = http.NewWalletsAPIController(http.NewWalletsAPIService(walletMngr))
 
-	trxMngr, newTrxMngrErr := ethtransactions.NewManager(ethClient, app.log, app.cfg.Ethereum.PrivateKey)
+	trxRepository, createTrxRepoErr := repositories.NewTransactionsRepository(ethClient, app.cfg.Ethereum.PrivateKey)
+	if createTrxRepoErr != nil {
+		app.log.Error("transactions repository create", "error", createTrxRepoErr)
+		return nil, fmt.Errorf("transactions repository create: %w", createTrxRepoErr)
+	}
+
+	trxMngr, newTrxMngrErr := ethtransactions.NewManager(trxRepository, app.log)
 	if newTrxMngrErr != nil {
 		app.log.Error("transactions manager build", "error", newTrxMngrErr)
 		return nil, fmt.Errorf("transactions manager build: %w", newTrxMngrErr)

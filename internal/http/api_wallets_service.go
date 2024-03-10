@@ -15,6 +15,7 @@ import (
 	"net/http"
 
 	"github.com/alewkinr/eth-trx-manager/internal/ethwallet"
+	"github.com/pkg/errors"
 )
 
 // WalletsAPIService is a service that implements the logic for the WalletsAPIServicer
@@ -34,24 +35,20 @@ func (s *WalletsAPIService) GetEthBalanceById(ctx context.Context, address strin
 	wallet := &ethwallet.Wallet{}
 	wallet.SetAddress(address)
 
-	if refreshBalanceErr := s.wm.RefreshBalance(ctx, wallet); refreshBalanceErr != nil {
-		// todo: cases when wallet not found, etc
-		return Response(http.StatusInternalServerError, nil), refreshBalanceErr
+	refreshBalanceErr := s.wm.RefreshBalance(ctx, wallet)
+
+	switch {
+	case errors.Is(refreshBalanceErr, nil):
+		return Response(http.StatusOK, Wallet{
+			Address: wallet.Address().String(),
+			Balance: wallet.Balance().String(),
+		}), nil
+
+	case errors.Is(refreshBalanceErr, ethwallet.ErrInvalidAddress):
+		return Response(http.StatusBadRequest, ErrBadRequest{Message: refreshBalanceErr.Error()}), refreshBalanceErr
+
+	default:
+		return Response(http.StatusInternalServerError, ErrInternalError{Message: refreshBalanceErr.Error()}), refreshBalanceErr
 	}
-	// Add api_wallets_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response Response(200, []Wallet{}) or use other options such as http.Ok ...
-	// return Response(200, []Wallet{}), nil
-
-	// TODO: Uncomment the next line to return response Response(4XX, ErrBadRequest{}) or use other options such as http.Ok ...
-	// return Response(4XX, ErrBadRequest{}), nil
-
-	// TODO: Uncomment the next line to return response Response(5XX, ErrInternalError{}) or use other options such as http.Ok ...
-	// return Response(5XX, ErrInternalError{}), nil
-
-	// todo: check wallet info is valid
-	return Response(http.StatusOK, Wallet{
-		Address: wallet.Address().String(),
-		Balance: wallet.Balance().String(),
-	}), nil
+	// TODO: Add api_wallets_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 }

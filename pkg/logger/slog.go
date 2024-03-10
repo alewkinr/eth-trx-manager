@@ -7,8 +7,14 @@ import (
 	"go.uber.org/zap"
 )
 
-func New() *slog.Logger {
-	zapL, _ := zap.NewProduction()
+func New(level string) *slog.Logger {
+	config := zap.NewProductionConfig()
+
+	lvl := zap.NewAtomicLevel()
+	_ = lvl.UnmarshalText([]byte(level))
+	config.Level = lvl
+
+	zapL, _ := config.Build()
 	defer func() { _ = zapL.Sync() }()
 
 	logger := slog.New(zaphandler.New(zapL))

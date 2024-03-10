@@ -32,15 +32,12 @@ func NewWalletsAPIService(wm *ethwallet.Manager) WalletsAPIServicer {
 
 // GetEthBalanceById - GetWalletBalance
 func (s *WalletsAPIService) GetEthBalanceById(ctx context.Context, address string) (ImplResponse, error) {
-	wallet := &ethwallet.Wallet{}
-	wallet.SetAddress(address)
-
-	refreshBalanceErr := s.wm.RefreshBalance(ctx, wallet)
+	wallet, refreshBalanceErr := s.wm.RefreshBalance(ctx, address)
 	switch {
 	case errors.Is(refreshBalanceErr, nil):
 		return Response(http.StatusOK, Wallet{
-			Address: wallet.Address().String(),
-			Balance: wallet.Balance().String(),
+			Address: wallet.Address,
+			Balance: wallet.FormattedBalance(),
 		}), nil
 
 	case errors.Is(refreshBalanceErr, ethwallet.ErrInvalidAddress):

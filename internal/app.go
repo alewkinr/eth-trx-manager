@@ -41,7 +41,7 @@ func NewApplication() (*Application, error) {
 	}
 	app.ethCloseFunc = closeFunc
 
-	walletMngr := ethwallet.NewManager(ethClient, app.log)
+	walletMngr := ethwallet.NewManager(ethereum.NewWalletRepository(ethClient), app.log)
 	app.walletAPI = http.NewWalletsAPIController(http.NewWalletsAPIService(walletMngr))
 
 	trxMngr, newTrxMngrErr := ethtransactions.NewManager(ethClient, app.log, app.cfg.Ethereum.PrivateKey)

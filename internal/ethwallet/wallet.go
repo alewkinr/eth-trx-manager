@@ -4,41 +4,24 @@ import (
 	"math/big"
 
 	"github.com/alewkinr/eth-trx-manager/pkg/ethereum"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 // Wallet — Ethereum wallet entity
 type Wallet struct {
-	// address — address of the wallet in string type
-	addressStr string
-	// balance — current balance of the wallet
-	balance *big.Float
+	Address string
+
+	Balance *big.Float
 }
 
 // Validate — validate info method
 func (w *Wallet) Validate() error {
-	if !ethereum.IsValidAddress(w.addressStr) || ethereum.IsZeroAddress(w.addressStr) {
+	if !ethereum.IsValidAddress(w.Address) || ethereum.IsZeroAddress(w.Address) {
 		return ErrInvalidAddress
 	}
 	return nil
 }
 
-// Balance — balance getter
-func (w *Wallet) Balance() *big.Float {
-	return w.balance
-}
-
-// SetBalance — balance setter
-func (w *Wallet) SetBalance(balance *big.Int) {
-	w.balance = ethereum.ToDecimal(balance, 18)
-}
-
-// Address — getter for address field
-func (w *Wallet) Address() common.Address {
-	return common.HexToAddress(w.addressStr)
-}
-
-// SetAddress — setter for address field
-func (w *Wallet) SetAddress(address string) {
-	w.addressStr = address
+// FormattedBalance — getter for formatted balance value (i.e. 0.0000000000000000001)
+func (w *Wallet) FormattedBalance() string {
+	return w.Balance.Text('f', 18)
 }

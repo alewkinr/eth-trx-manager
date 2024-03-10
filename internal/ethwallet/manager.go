@@ -3,40 +3,40 @@ package ethwallet
 import (
 	"context"
 	"log/slog"
-
-	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 // Manager — manager for wallets
 type Manager struct {
-	log       *slog.Logger
-	ethClient *ethclient.Client
+	log *slog.Logger
+	wr  WalletRepository
 }
 
 // NewManager — constructor for Manager
-func NewManager(ec *ethclient.Client, l *slog.Logger) *Manager {
+func NewManager(wr WalletRepository, l *slog.Logger) *Manager {
 	return &Manager{
-		log:       l,
-		ethClient: ec,
+		log: l,
+		wr:  wr,
 	}
 }
 
 // RefreshBalance — get balance of the wallet from network, updates in wallet
-func (m *Manager) RefreshBalance(ctx context.Context, wallet *Wallet) error {
-	log := m.log.With("address", wallet.Address().String())
+func (m *Manager) RefreshBalance(ctx context.Context, address string) (*Wallet, error) {
+	log := m.log.With("address", address)
+	wallet := &Wallet{Address: address}
+
 	if validateErr := wallet.Validate(); validateErr != nil {
-		return ErrInvalidAddress
+		return nil, ErrInvalidAddress
 	}
 
-	balance, getBalanceErr := m.ethClient.BalanceAt(ctx, wallet.Address(), nil)
+	walletWithBalance, getBalanceErr := m.wr.GetWalletBalance(ctx, wallet.Address)
 	if getBalanceErr != nil {
-		log.Error("get balance at", "address", wallet.Address(), "error", getBalanceErr)
-		return ErrReceiveWalletBalance
+		log.Error("get balance at", "error", getBalanceErr)
+		return nil, ErrReceiveWalletBalance
 	}
 
-	wallet.SetBalance(balance)
+	wallet.Balance = walletWithBalance.Balance
 
-	log.Debug("RefreshBalance", "balance", wallet.Balance())
+	log.Debug("RefreshBalance", "balance", wallet.Balance)
 
-	return nil
+	return wallet, nil
 }

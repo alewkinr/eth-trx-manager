@@ -2,7 +2,6 @@ package ethwallet
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -24,18 +23,20 @@ func NewManager(ec *ethclient.Client, l *slog.Logger) *Manager {
 
 // RefreshBalance — get balance of the wallet from network, updates in wallet
 func (m *Manager) RefreshBalance(ctx context.Context, wallet *Wallet) error {
+	log := m.log.With("address", wallet.Address().String())
 	if validateErr := wallet.Validate(); validateErr != nil {
-		return fmt.Errorf("validate wallet: %w", validateErr)
+		return ErrInvalidAddress
 	}
 
 	balance, getBalanceErr := m.ethClient.BalanceAt(ctx, wallet.Address(), nil)
 	if getBalanceErr != nil {
-		return fmt.Errorf("get balance: %w", getBalanceErr)
+		log.Error("get balance at", "address", wallet.Address(), "error", getBalanceErr)
+		return ErrReceiveWalletBalance
 	}
 
 	wallet.SetBalance(balance)
 
-	m.log.Debug("RefreshBalance", "address", wallet.Address(), "balance", wallet.Balance())
+	log.Debug("RefreshBalance", "balance", wallet.Balance())
 
 	return nil
 }

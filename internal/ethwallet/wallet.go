@@ -9,8 +9,6 @@ import (
 
 // Wallet — Ethereum wallet entity
 type Wallet struct {
-	// *sync.RWMutex // todo: uncomment?
-
 	// address — address of the wallet in string type
 	addressStr string
 	// balance — current balance of the wallet

@@ -2,5 +2,8 @@ package ethwallet
 
 import "github.com/pkg/errors"
 
-// ErrInvalidAddress — error for invalid wallet address
-var ErrInvalidAddress = errors.New("invalid wallet address")
+var (
+	// ErrInvalidAddress — error for invalid wallet address
+	ErrInvalidAddress       = errors.New("invalid wallet address")
+	ErrReceiveWalletBalance = errors.New("failed to receive wallet balance")
+)

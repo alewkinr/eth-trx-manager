@@ -1,5 +1,3 @@
-// TODO: add tools.go
-//
 //go:generate go run github.com/abice/go-enum -f transaction.go --nocase --marshal --sql --sqlnullstr --forceupper
 package ethtransactions
 

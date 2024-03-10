@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/alewkinr/eth-trx-manager/internal/ethtransactions"
+	"github.com/alewkinr/eth-trx-manager/pkg/cache"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -18,13 +19,14 @@ import (
 const stdGasLimit = uint64(21000)
 
 type TransactionsRepository struct {
+	store           cache.Cache
 	privateKeyECDSA *ecdsa.PrivateKey
 	signKeyECDSA    *ecdsa.PublicKey
 	ethClient       *ethclient.Client
 }
 
 // NewTransactionsRepository — constructor for TransactionsRepository
-func NewTransactionsRepository(ethClient *ethclient.Client, privateKeyHex string) (*TransactionsRepository, error) {
+func NewTransactionsRepository(ethClient *ethclient.Client, privateKeyHex string, store cache.Cache) (*TransactionsRepository, error) {
 	pk, parseKeyErr := crypto.HexToECDSA(privateKeyHex)
 	if parseKeyErr != nil {
 		return nil, fmt.Errorf("parse private key: %w", parseKeyErr)
@@ -40,10 +42,15 @@ func NewTransactionsRepository(ethClient *ethclient.Client, privateKeyHex string
 		privateKeyECDSA: pk,
 		signKeyECDSA:    publicKeyECDSA,
 		ethClient:       ethClient,
+		store:           store,
 	}, nil
 }
 
 func (r *TransactionsRepository) GetTransaction(ctx context.Context, hash string) (*ethtransactions.Transaction, error) {
+	if trx, isCached := r.store.Get(hash); isCached {
+		return trx.(*ethtransactions.Transaction), nil
+	}
+
 	trxHash := common.HexToHash(hash)
 
 	ethTrx, isPending, getTrxErr := r.ethClient.TransactionByHash(ctx, trxHash)
@@ -76,6 +83,8 @@ func (r *TransactionsRepository) GetTransaction(ctx context.Context, hash string
 		Timestamp: ethTrx.Time(),
 		Status:    trxStatus,
 	}
+
+	r.store.Add(domainTrx.Hash, domainTrx)
 
 	return domainTrx, nil
 }

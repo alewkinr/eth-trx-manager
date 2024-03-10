@@ -9,6 +9,7 @@ import (
 
 type Store struct {
 	cache *expirable.LRU[string, any]
+	ttl   time.Duration
 	log   *slog.Logger
 }
 
@@ -18,6 +19,7 @@ func NewStore(size int, ttl time.Duration, logger *slog.Logger) *Store {
 
 	return &Store{
 		cache: expirable.NewLRU[string, any](size, nil, ttl),
+		ttl:   ttl,
 		log:   logger,
 	}
 }

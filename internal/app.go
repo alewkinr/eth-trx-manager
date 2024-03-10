@@ -36,7 +36,8 @@ func NewApplication() (*Application, error) {
 	app.cfg = config.MustNewConfig()
 	app.log = logger.New(app.cfg.Log.Level)
 
-	cache := inmemory.NewStore(app.cfg.Size, app.cfg.TTL, app.log)
+	walletCache := inmemory.NewStore(app.cfg.Cache.WalletsSize, app.cfg.Cache.WalletsTTL, app.log)
+	trxCache := inmemory.NewStore(app.cfg.Cache.TransactionsSize, app.cfg.Cache.TransactionsTTL, app.log)
 
 	ethClient, closeFunc, connEthClientErr := ethereum.NewClient(app.cfg.Ethereum.URL)
 	if connEthClientErr != nil {
@@ -45,10 +46,10 @@ func NewApplication() (*Application, error) {
 	}
 	app.ethCloseFunc = closeFunc
 
-	walletMngr := ethwallet.NewManager(repositories.NewWalletRepository(ethClient, cache), app.log)
+	walletMngr := ethwallet.NewManager(repositories.NewWalletRepository(ethClient, walletCache), app.log)
 	app.walletAPI = http.NewWalletsAPIController(http.NewWalletsAPIService(walletMngr))
 
-	trxRepository, createTrxRepoErr := repositories.NewTransactionsRepository(ethClient, app.cfg.Ethereum.PrivateKey)
+	trxRepository, createTrxRepoErr := repositories.NewTransactionsRepository(ethClient, app.cfg.Ethereum.PrivateKey, trxCache)
 	if createTrxRepoErr != nil {
 		app.log.Error("transactions repository create", "error", createTrxRepoErr)
 		return nil, fmt.Errorf("transactions repository create: %w", createTrxRepoErr)

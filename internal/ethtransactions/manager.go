@@ -2,7 +2,6 @@ package ethtransactions
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
 	"crypto/ecdsa"
@@ -25,41 +24,46 @@ type Manager struct {
 
 // NewManager — constructor for Manager
 func NewManager(ec *ethclient.Client, l *slog.Logger, privateKeyHex string) (*Manager, error) {
+	m := &Manager{log: l, ethClient: ec}
+
 	pk, parseKeyErr := crypto.HexToECDSA(privateKeyHex)
 	if parseKeyErr != nil {
-		// todo: add logging
-		return nil, ErrCreateTransactionManager
-	}
-	publicKey := pk.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		// todo: add logging
+		m.log.Error("parse private key", "error", parseKeyErr)
 		return nil, ErrCreateTransactionManager
 	}
 
-	return &Manager{
-		privateKeyECDSA: pk,
-		signKeyECDSA:    publicKeyECDSA,
-		log:             l,
-		ethClient:       ec,
-	}, nil
+	publicKey := pk.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		m.log.Error("type converting public key not ok", "publicKey", publicKey)
+		return nil, ErrCreateTransactionManager
+	}
+
+	m.privateKeyECDSA = pk
+	m.signKeyECDSA = publicKeyECDSA
+
+	return m, nil
 }
 
 // GetTransaction — get data of the transaction
 func (m *Manager) GetTransaction(ctx context.Context, trx *Transaction) (*Transaction, error) {
+	log := m.log.With("hash", trx.Hash().String())
+
 	ethTrx, isPending, getTrxErr := m.ethClient.TransactionByHash(ctx, trx.Hash())
 	if getTrxErr != nil {
 		if errors.Is(getTrxErr, ethereum.NotFound) {
+			log.Debug("transaction not found", "error", getTrxErr)
 			return nil, nil
 		}
 
-		return nil, fmt.Errorf("get transaction: %w", getTrxErr)
+		log.Error("get transaction", "error", getTrxErr)
+		return nil, ErrGetTransaction
 	}
 
 	from, getFromErr := m.getFromAddress(ethTrx)
 	if getFromErr != nil {
-
-		return nil, fmt.Errorf("get from address: %w", getFromErr)
+		log.Error("get from address", "error", getFromErr)
+		return nil, ErrGetTransaction
 	}
 
 	trx.SetTo(ethTrx.To())
@@ -68,7 +72,7 @@ func (m *Manager) GetTransaction(ctx context.Context, trx *Transaction) (*Transa
 	trx.SetTimestamp(ethTrx.Time())
 	trx.SetStatus(isPending)
 
-	m.log.Debug("GetTransaction", "hash", trx.Hash(), "to", trx.To(), "from", trx.From(), "value", trx.Value(), "status", trx.Status(), "timestamp", trx.Timestamp())
+	log.Debug("GetTransaction", "to", trx.To(), "from", trx.From(), "value", trx.Value(), "status", trx.Status(), "timestamp", trx.Timestamp())
 
 	return trx, nil
 }
@@ -79,20 +83,23 @@ func (m *Manager) getFromAddress(tx *types.Transaction) (common.Address, error) 
 	return from, err
 }
 
+// stdGasLimit — standard gas limit for transaction
+const stdGasLimit = uint64(21000)
+
 // CreateTransaction – create a new transaction (sending ETH)
 func (m *Manager) CreateTransaction(ctx context.Context, trx *Transaction) (*Transaction, error) {
+	log := m.log.With("to", trx.To().String(), "value", trx.Value().String())
 	trx.SetFrom(crypto.PubkeyToAddress(*m.signKeyECDSA))
 
-	stdGasLimit := uint64(21000)
 	gasPrice, err := m.ethClient.SuggestGasPrice(ctx)
 	if err != nil {
-		// todo: add logging
+		log.Error("suggest gas price", "error", err)
 		return nil, ErrReceiveGasPrice
 	}
 
-	nonce, err := m.ethClient.PendingNonceAt(context.Background(), trx.From())
+	nonce, err := m.ethClient.PendingNonceAt(ctx, trx.From())
 	if err != nil {
-		// todo: add logging
+		log.Error("receive nonce", "error", err)
 		return nil, ErrReceiveNonce
 	}
 
@@ -105,23 +112,28 @@ func (m *Manager) CreateTransaction(ctx context.Context, trx *Transaction) (*Tra
 		nil,
 	)
 
-	chainID, err := m.ethClient.NetworkID(context.Background())
+	chainID, err := m.ethClient.NetworkID(ctx)
 	if err != nil {
+		log.Error("receive chain id", "error", err)
 		return nil, ErrReceiveChainID
 	}
 
 	signedTx, err := types.SignTx(ethTrx, types.NewEIP155Signer(chainID), m.privateKeyECDSA)
 	if err != nil {
+		log.Error("sign transaction", "error", err)
 		return nil, ErrSignTransaction
 	}
 
 	if err := m.ethClient.SendTransaction(ctx, signedTx); err != nil {
+		log.Error("send transaction", "error", err, "from", trx.From().String())
 		return nil, ErrSendTransaction
 	}
 
 	trx.SetHash(signedTx.Hash().String())
 	trx.SetTimestamp(signedTx.Time())
 	trx.SetStatus(true)
+
+	m.log.Debug("CreateTransaction", "hash", trx.Hash().String(), "from", trx.From().String(), "to", trx.To().String(), "value", trx.Value().String(), "status", trx.Status().String(), "timestamp", trx.Timestamp())
 
 	return trx, nil
 }

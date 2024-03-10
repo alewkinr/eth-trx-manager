@@ -7,6 +7,7 @@ var (
 	ErrReceiveNonce             = errors.New("failed to receive nonce")
 	ErrReceiveChainID           = errors.New("failed to receive chain id")
 	ErrSignTransaction          = errors.New("failed to sign transaction")
+	ErrGetTransaction           = errors.New("failed to get transaction")
 	ErrSendTransaction          = errors.New("failed to send transaction")
 	ErrCreateTransactionManager = errors.New("failed to create transactions manager")
 )

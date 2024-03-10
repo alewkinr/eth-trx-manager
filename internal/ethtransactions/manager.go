@@ -7,10 +7,12 @@ import (
 
 	"crypto/ecdsa"
 
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/pkg/errors"
 )
 
 // Manager — manager for transactions
@@ -47,11 +49,16 @@ func NewManager(ec *ethclient.Client, l *slog.Logger, privateKeyHex string) (*Ma
 func (m *Manager) GetTransaction(ctx context.Context, trx *Transaction) (*Transaction, error) {
 	ethTrx, isPending, getTrxErr := m.ethClient.TransactionByHash(ctx, trx.Hash())
 	if getTrxErr != nil {
+		if errors.Is(getTrxErr, ethereum.NotFound) {
+			return nil, nil
+		}
+
 		return nil, fmt.Errorf("get transaction: %w", getTrxErr)
 	}
 
 	from, getFromErr := m.getFromAddress(ethTrx)
 	if getFromErr != nil {
+
 		return nil, fmt.Errorf("get from address: %w", getFromErr)
 	}
 
@@ -76,7 +83,7 @@ func (m *Manager) getFromAddress(tx *types.Transaction) (common.Address, error) 
 func (m *Manager) CreateTransaction(ctx context.Context, trx *Transaction) (*Transaction, error) {
 	trx.SetFrom(crypto.PubkeyToAddress(*m.signKeyECDSA))
 
-	stdGasLimit := uint64(3600)
+	stdGasLimit := uint64(21000)
 	gasPrice, err := m.ethClient.SuggestGasPrice(ctx)
 	if err != nil {
 		// todo: add logging

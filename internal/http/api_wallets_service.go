@@ -36,7 +36,6 @@ func (s *WalletsAPIService) GetEthBalanceById(ctx context.Context, address strin
 	wallet.SetAddress(address)
 
 	refreshBalanceErr := s.wm.RefreshBalance(ctx, wallet)
-
 	switch {
 	case errors.Is(refreshBalanceErr, nil):
 		return Response(http.StatusOK, Wallet{

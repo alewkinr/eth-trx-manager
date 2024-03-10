@@ -66,22 +66,22 @@ func (c *TransactionsAPIController) Routes() Routes {
 
 // AddTrx - CreateTransaction
 func (c *TransactionsAPIController) AddTrx(w http.ResponseWriter, r *http.Request) {
-	transactionParam := Transaction{}
+	createTransactionRequestParam := CreateTransactionRequest{}
 	d := json.NewDecoder(r.Body)
 	d.DisallowUnknownFields()
-	if err := d.Decode(&transactionParam); err != nil {
+	if err := d.Decode(&createTransactionRequestParam); err != nil {
 		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
 		return
 	}
-	if err := AssertTransactionRequired(transactionParam); err != nil {
+	if err := AssertCreateTransactionRequestRequired(createTransactionRequestParam); err != nil {
 		c.errorHandler(w, r, err, nil)
 		return
 	}
-	if err := AssertTransactionConstraints(transactionParam); err != nil {
+	if err := AssertCreateTransactionRequestConstraints(createTransactionRequestParam); err != nil {
 		c.errorHandler(w, r, err, nil)
 		return
 	}
-	result, err := c.service.AddTrx(r.Context(), transactionParam)
+	result, err := c.service.AddTrx(r.Context(), createTransactionRequestParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

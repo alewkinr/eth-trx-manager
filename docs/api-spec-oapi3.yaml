@@ -92,7 +92,9 @@ paths:
       application/json:
        schema:
         $ref: "#/components/schemas/Transaction"
- 
+    
+    "204":
+     description: Transaction not found
  
  /wallets/{address}:
   get:
@@ -123,6 +125,7 @@ paths:
       application/json:
        schema:
         $ref: "#/components/schemas/ErrInternalError"
+    
     "200":
      description: Wallet information was received successfully
      content:
@@ -131,7 +134,10 @@ paths:
         type: array
         items:
          $ref: "#/components/schemas/Wallet"
-
+    
+    "204":
+     description: Wallet not found
+ 
 
 components:
  schemas:
@@ -161,7 +167,7 @@ components:
     value:
      description: The value being transacted in Ether
      type: string
-     example: 0,000000000000001
+     example: 0.000000000000001
     timestamp:
      description: Transaction timestamp in RFC3339 format
      type: string
@@ -193,7 +199,7 @@ components:
     balance:
      description: The balance of the wallet in Ether
      type: string
-     example: 0,000000000000001
+     example: 0.000000000000001
   
   ErrBadRequest:
    description: Bad request error response
@@ -218,18 +224,18 @@ components:
      example: "internal error"
  
   CreateTransactionRequest:
-    description: New transaction request
-    type: object
-    required:
-      - to
-      - value
-    properties:
-      to:
-        type: string
-        example: "0x7fa06F065C9f0d85AAaa9b0A5927f30533cecEE0"
-      value:
-        description: The value to transfer in Wei (1000 Wei = 0,000000000000001 Ether)
-        type: integer
-        format: int64
-        example: 1000
+   description: New transaction request
+   type: object
+   required:
+     - to
+     - value
+   properties:
+     to:
+       type: string
+       example: "0x7fa06F065C9f0d85AAaa9b0A5927f30533cecEE0"
+     value:
+       description: The value to transfer in Wei (1000 Wei = 0.000000000000001 Ether)
+       type: integer
+       format: int64
+       example: 1000
    

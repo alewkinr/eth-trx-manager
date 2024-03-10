@@ -12,9 +12,12 @@ package http
 
 import (
 	"context"
+	"math/big"
 	"net/http"
 
 	"github.com/alewkinr/eth-trx-manager/internal/ethtransactions"
+	"github.com/alewkinr/eth-trx-manager/pkg/ethereum"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 // TransactionsAPIService is a service that implements the logic for the TransactionsAPIServicer
@@ -32,8 +35,12 @@ func NewTransactionsAPIService(trxm *ethtransactions.Manager) TransactionsAPISer
 }
 
 // AddTrx - CreateTransaction
-func (s *TransactionsAPIService) AddTrx(ctx context.Context, transaction Transaction) (ImplResponse, error) {
+func (s *TransactionsAPIService) AddTrx(ctx context.Context, request CreateTransactionRequest) (ImplResponse, error) {
 	trx := &ethtransactions.Transaction{}
+	trx.SetValue(big.NewInt(request.Value))
+
+	to := common.HexToAddress(request.To) // todo: fix somehow!!!
+	trx.SetTo(&to)
 
 	updatedTrx, createTrxErr := s.trxm.CreateTransaction(ctx, trx)
 	if createTrxErr != nil {
@@ -53,13 +60,11 @@ func (s *TransactionsAPIService) AddTrx(ctx context.Context, transaction Transac
 	// return Response(5XX, ErrInternalError{}), nil
 
 	return Response(http.StatusOK, Transaction{
-		Hash: updatedTrx.Hash().String(),
-		From: updatedTrx.From().String(),
-		To:   updatedTrx.To().String(),
-		Value: TransactionValue{
-			Amount:   updatedTrx.Value().Int64(),
-			Fraction: updatedTrx.Value().Int64(),
-		},
+		Hash:      updatedTrx.Hash().String(),
+		From:      updatedTrx.From().String(),
+		To:        updatedTrx.To().String(),
+		Value:     ethereum.ToDecimal(updatedTrx.Value(), 18).Text('f', 18),
+		Status:    updatedTrx.Status().String(),
 		Timestamp: updatedTrx.Timestamp(),
 	}), nil
 }
@@ -71,7 +76,11 @@ func (s *TransactionsAPIService) GetByTrxId(ctx context.Context, hash string) (I
 
 	updatedTrx, getTrxErr := s.trxm.GetTransaction(ctx, trx)
 	if getTrxErr != nil {
-		return Response(http.StatusInternalServerError, nil), getTrxErr
+		return Response(http.StatusInternalServerError, ErrInternalError{Message: "internal error"}), getTrxErr
+	}
+
+	if updatedTrx == nil {
+		return Response(http.StatusNoContent, nil), nil
 	}
 	// TODO - update GetByTrxId with the required logic for this service method.
 	// Add api_transactions_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
@@ -86,13 +95,11 @@ func (s *TransactionsAPIService) GetByTrxId(ctx context.Context, hash string) (I
 	// return Response(5XX, ErrInternalError{}), nil
 
 	return Response(http.StatusOK, Transaction{
-		Hash: updatedTrx.Hash().String(),
-		From: updatedTrx.From().String(),
-		To:   updatedTrx.To().String(),
-		Value: TransactionValue{
-			Amount:   updatedTrx.Value().Int64(),
-			Fraction: 0,
-		},
+		Hash:      updatedTrx.Hash().String(),
+		From:      updatedTrx.From().String(),
+		To:        updatedTrx.To().String(),
+		Value:     ethereum.ToDecimal(updatedTrx.Value(), 18).String(),
+		Status:    updatedTrx.Status().String(),
 		Timestamp: updatedTrx.Timestamp(),
 	}), nil
 }

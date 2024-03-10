@@ -16,7 +16,7 @@ type Wallet struct {
 	// Ethereum address of the wallet
 	Address string `json:"address"`
 
-	// Ethereum wallet balance
+	// The balance of the wallet in Ether
 	Balance string `json:"balance"`
 }
 

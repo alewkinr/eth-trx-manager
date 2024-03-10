@@ -21,4 +21,3 @@ docker run --rm \
     --global-property=verbose=true,git-user-id="${GIT_USER_ID}",git-repo-id="${GIT_REPO_ID}" \
     --additional-properties=enablePostProcessFile=true,hideGenerationTimestamp=true,packageName=http,outputAsLibrary=true,router=chi,sourceFolder=http \
     -o "${OUT_DIR}"
-#    todo: add onlyInterfaces=true add prop

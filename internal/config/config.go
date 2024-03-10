@@ -22,12 +22,9 @@ type Config struct {
 	Port string `koanf:"port"`
 
 	*Ethereum `koanf:"ethereum"`
-}
 
-const (
-	delim     = "_"
-	envPrefix = "ETM_"
-)
+	*Log `koanf:"log"`
+}
 
 // MustNewConfig — constructor for configuration struct, or panic if error
 func MustNewConfig() *Config {
@@ -36,7 +33,6 @@ func MustNewConfig() *Config {
 	}
 
 	if err := cfg.k.Load(env.Provider("", delimiter, nil), nil); err != nil {
-		// todo: substitute panic
 		panic(fmt.Errorf("providing env vars: %w", err))
 	}
 

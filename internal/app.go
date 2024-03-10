@@ -13,8 +13,10 @@ import (
 	"github.com/alewkinr/eth-trx-manager/internal/ethwallet"
 	"github.com/alewkinr/eth-trx-manager/internal/http"
 	"github.com/alewkinr/eth-trx-manager/pkg/ethereum"
+	"github.com/alewkinr/eth-trx-manager/pkg/logger"
 )
 
+// Application — main application container
 type Application struct {
 	cfg *config.Config
 	log *slog.Logger
@@ -27,22 +29,25 @@ type Application struct {
 }
 
 // NewApplication — constructor for application
-func NewApplication(lgr *slog.Logger) *Application {
-	app := &Application{log: lgr}
+func NewApplication() (*Application, error) {
+	app := &Application{}
 	app.cfg = config.MustNewConfig()
+	app.log = logger.New(app.cfg.Log.Level)
 
 	ethClient, closeFunc, connEthClientErr := ethereum.NewClient(app.cfg.Ethereum.URL)
 	if connEthClientErr != nil {
-		panic(connEthClientErr) // todo: fix for error handling
+		app.log.Error("ethereum client connection", "error", connEthClientErr)
+		return nil, fmt.Errorf("ethereum client connection: %w", connEthClientErr)
 	}
 	app.ethCloseFunc = closeFunc
 
-	walletMngr := ethwallet.NewManager(ethClient, lgr)
+	walletMngr := ethwallet.NewManager(ethClient, app.log)
 	app.walletAPI = http.NewWalletsAPIController(http.NewWalletsAPIService(walletMngr))
 
-	trxMngr, err := ethtransactions.NewManager(ethClient, lgr, app.cfg.Ethereum.PrivateKey)
-	if err != nil {
-		return nil
+	trxMngr, newTrxMngrErr := ethtransactions.NewManager(ethClient, app.log, app.cfg.Ethereum.PrivateKey)
+	if newTrxMngrErr != nil {
+		app.log.Error("transactions manager build", "error", newTrxMngrErr)
+		return nil, fmt.Errorf("transactions manager build: %w", newTrxMngrErr)
 	}
 	app.transactionsAPI = http.NewTransactionsAPIController(http.NewTransactionsAPIService(trxMngr))
 
@@ -51,7 +56,7 @@ func NewApplication(lgr *slog.Logger) *Application {
 		Handler: http.NewRouter(app.walletAPI, app.transactionsAPI),
 	}
 
-	return app
+	return app, nil
 }
 
 // Run — run application

@@ -43,6 +43,6 @@ Load testing was proceeded using [vegeta](https://github.com/tsenart/vegeta) CLI
 > It will loadtest `GET /wallets/{hash}` endpoing using 10k different Ethereum wallets hashes.
 
 The report will be available in the same folder as the run script. Here is the Macbook M2 PRO (16RAM, 512SSD) report:
-![](/Users/alewkinr/tech/github.com/alewkinr/eth-trx-manager/scripts/loadtest/hist.png)
+![](./scripts/loadtest/hist.png)
 
 _Also, you will be able to see detailed reports after load test run in the same directory as the run-script_ 
